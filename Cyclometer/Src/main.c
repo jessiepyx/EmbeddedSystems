@@ -58,7 +58,7 @@ static void MX_TIM3_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void UART_Init(UART_HandleTypeDef UartHandle);
 /* USER CODE END 0 */
 
 /**
@@ -91,7 +91,8 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
+	UART_HandleTypeDef UartHandle;
+	UART_Init(UartHandle);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -101,6 +102,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		HAL_UART_Transmit(&UartHandle, (uint8_t*)"Hello\r\n", 7, 100);
+		HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
@@ -217,7 +220,23 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/**
+  * @brief UART Initialization Function
+  * @param UART Handle
+  * @retval None
+  */
+void UART_Init(UART_HandleTypeDef UartHandle)
+{
+	UartHandle.Instance = USART1;
+	UartHandle.Init.BaudRate = 9600;
+	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+	UartHandle.Init.StopBits = UART_STOPBITS_1;
+	UartHandle.Init.Parity = UART_PARITY_NONE;
+	UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	UartHandle.Init.Mode = UART_MODE_TX_RX;
+	
+	HAL_UART_Init(&UartHandle);
+}
 /* USER CODE END 4 */
 
 /**

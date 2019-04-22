@@ -1,0 +1,21 @@
+--cpu Cortex-M3
+"cyclometer\startup_stm32f103xb.o"
+"cyclometer\main.o"
+"cyclometer\stm32f1xx_it.o"
+"cyclometer\stm32f1xx_hal_msp.o"
+"cyclometer\stm32f1xx_hal_gpio_ex.o"
+"cyclometer\stm32f1xx_hal_tim.o"
+"cyclometer\stm32f1xx_hal_tim_ex.o"
+"cyclometer\stm32f1xx_hal.o"
+"cyclometer\stm32f1xx_hal_rcc.o"
+"cyclometer\stm32f1xx_hal_rcc_ex.o"
+"cyclometer\stm32f1xx_hal_gpio.o"
+"cyclometer\stm32f1xx_hal_dma.o"
+"cyclometer\stm32f1xx_hal_cortex.o"
+"cyclometer\stm32f1xx_hal_pwr.o"
+"cyclometer\stm32f1xx_hal_uart.o"
+"cyclometer\system_stm32f1xx.o"
+--library_type=microlib --strict --scatter "Cyclometer\Cyclometer.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Cyclometer.map" -o Cyclometer\Cyclometer.axf
