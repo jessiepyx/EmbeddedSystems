@@ -102,7 +102,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		HAL_UART_Transmit(&UartHandle, (uint8_t*)"Hello\r\n", 7, 100);
+		HAL_UART_Transmit(&UartHandle, (uint8_t*)"Hello, World!\r\n", 15, 100);
 		HAL_Delay(100);
   }
   /* USER CODE END 3 */
