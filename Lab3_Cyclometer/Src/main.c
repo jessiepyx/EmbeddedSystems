@@ -98,7 +98,11 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		HAL_UART_Transmit(&UartHandle, (uint8_t*)"Hello, World!\r\n", 15, 500);
+//		HAL_UART_Transmit(&UartHandle, (uint8_t*)"Hello, World!\r\n", 15, 500);
+		if(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11))
+		{
+			HAL_UART_Transmit(&UartHandle, (uint8_t*)"Pressed\r\n", 9, 500);
+		}
 		HAL_Delay(100);
   }
   /* USER CODE END 3 */
@@ -164,9 +168,21 @@ void MX_GPIO_Init(void)
   __GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pins : PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+//  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+//  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+//  GPIO_InitStruct.Pull = GPIO_NOPULL;
+//  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	
+	GPIO_InitStruct.Pin = GPIO_PIN_11;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	
+	GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
