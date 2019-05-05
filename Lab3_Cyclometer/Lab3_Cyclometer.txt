@@ -1,6 +1,6 @@
 Configuration	Lab3_Cyclometer
 STM32CubeMX 	4.9.0
-Date	05/04/2019
+Date	05/05/2019
 MCU	STM32F103C8Tx
 
 
