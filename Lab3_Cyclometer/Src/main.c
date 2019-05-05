@@ -44,7 +44,8 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-int PA12_Count = 0; // wheel rolls
+int PA12_Flag = 0; // wheel rolls
+int rounds = 0; // assume 2 meters per round
 int TIM3_Count = 0; // time in second
 int PA11_Flag = 0; // change mode
 int mode = 0; // 0 for Mode 1: distance; 1 for Mode 2: speed
@@ -101,21 +102,33 @@ int main(void)
 
   /* USER CODE BEGIN 3 */
 		//printf("Hello, World!\r\n");
-		if(PA11_Flag == 1)
+		if (PA11_Flag == 1)
 		{
-			mode ^= 1;
-			printf("change to Mode %d\r\n", mode+1);
+			HAL_Delay(10); // anti-jitter
+			if (!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11))
+			{
+				mode ^= 1;
+				printf("change to Mode %d\r\n", mode+1);
+			}
 			PA11_Flag = 0;
 		}
-		if (mode == 0) // distance
+		if (PA12_Flag == 1)
 		{
-			printf("distance: %d m\r\n", PA12_Count*2); // assume 2m per circle
+			HAL_Delay(10); // anti-jitter
+			if (!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12))
+			{
+				rounds++;
+				if (mode == 0) // distance
+				{
+					printf("distance: %d m\r\n", rounds*2);
+				}
+				else
+				{
+					printf("speed: %f m/s\r\n", rounds*2/(double)TIM3_Count);
+				}
+			}
+			PA12_Flag = 0;
 		}
-		else
-		{
-			printf("speed: %f m/s\r\n", PA12_Count*2/(double)TIM3_Count);
-		}
-		HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 
@@ -219,11 +232,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == GPIO_PIN_12)
 	{
-		PA12_Count++;
+		PA12_Flag = 1;
 	}
 	else if (GPIO_Pin == GPIO_PIN_11)
 	{
-		PA11_Flag ^= 1;
+		PA11_Flag = 1;
 	}
 	else
 	{
