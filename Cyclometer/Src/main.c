@@ -234,6 +234,7 @@ void UART_Init(UART_HandleTypeDef UartHandle)
 	UartHandle.Init.Parity = UART_PARITY_NONE;
 	UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	UartHandle.Init.Mode = UART_MODE_TX_RX;
+	UartHandle.Init.OverSampling = UART_OVERSAMPLING_16;
 	
 	HAL_UART_Init(&UartHandle);
 }

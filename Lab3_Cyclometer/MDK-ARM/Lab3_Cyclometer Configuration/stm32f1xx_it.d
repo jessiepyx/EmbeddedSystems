@@ -25,3 +25,4 @@ lab3_cyclometer configuration\stm32f1xx_it.o: ..\Drivers\STM32F1xx_HAL_Driver\In
 lab3_cyclometer configuration\stm32f1xx_it.o: ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h
 lab3_cyclometer configuration\stm32f1xx_it.o: ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h
 lab3_cyclometer configuration\stm32f1xx_it.o: ..\Inc\stm32f1xx_it.h
+lab3_cyclometer configuration\stm32f1xx_it.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

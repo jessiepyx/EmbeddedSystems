@@ -34,36 +34,46 @@
 #include "stm32f1xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
+TIM_HandleTypeDef htim3;
+
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-
+int PA12_Count = 0; // wheel rolls
+int TIM3_Count = 0; // time in second
+int PA11_Flag = 0; // change mode
+int mode = 0; // 0 for Mode 1: distance; 1 for Mode 2: speed
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_TIM3_Init(void);
 static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-
+void HAL_GPIO_EXTI_Callback(uint16_t);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-
+#ifdef __GNUC__
+	#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+	#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC_ */
 /* USER CODE END 0 */
 
 int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+	
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -76,19 +86,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM3_Init();
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
-	UART_HandleTypeDef UartHandle;
-	
-	UartHandle.Instance = USART1;
-	UartHandle.Init.BaudRate = 9600;
-	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-	UartHandle.Init.Parity = UART_PARITY_NONE;
-	UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	UartHandle.Init.Mode = UART_MODE_TX_RX;
-	
-	HAL_UART_Init(&UartHandle);
+	HAL_TIM_Base_Start_IT(&htim3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -98,12 +100,22 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-//		HAL_UART_Transmit(&UartHandle, (uint8_t*)"Hello, World!\r\n", 15, 500);
-		if(!HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11))
+		//printf("Hello, World!\r\n");
+		if(PA11_Flag == 1)
 		{
-			HAL_UART_Transmit(&UartHandle, (uint8_t*)"Pressed\r\n", 9, 500);
+			mode ^= 1;
+			printf("change to Mode %d\r\n", mode+1);
+			PA11_Flag = 0;
 		}
-		HAL_Delay(100);
+		if (mode == 0) // distance
+		{
+			printf("distance: %d m\r\n", PA12_Count*2); // assume 2m per circle
+		}
+		else
+		{
+			printf("speed: %f m/s\r\n", PA12_Count*2/(double)TIM3_Count);
+		}
+		HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 
@@ -136,12 +148,35 @@ void SystemClock_Config(void)
 
 }
 
+/* TIM3 init function */
+void MX_TIM3_Init(void)
+{
+
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 8000;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 199;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  HAL_TIM_Base_Init(&htim3);
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig);
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig);
+
+}
+
 /* USART1 init function */
 void MX_USART1_UART_Init(void)
 {
 
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -168,26 +203,49 @@ void MX_GPIO_Init(void)
   __GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pins : PA11 PA12 */
-//  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
-//  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-//  GPIO_InitStruct.Pull = GPIO_NOPULL;
-//  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	
-	GPIO_InitStruct.Pin = GPIO_PIN_11;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	
-	GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+  GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == GPIO_PIN_12)
+	{
+		PA12_Count++;
+	}
+	else if (GPIO_Pin == GPIO_PIN_11)
+	{
+		PA11_Flag ^= 1;
+	}
+	else
+	{
+		UNUSED(GPIO_Pin);
+	}
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	TIM3_Count++;
+}
+
+/**
+   * @brief Retargets the C library printf function to the USART
+   * @param None
+   * @retval None
+   */
+PUTCHAR_PROTOTYPE
+{
+	HAL_UART_Transmit(&huart1, (uint8_t*)&ch, 1, 0xffff);
+	return ch;
+}
 
 /* USER CODE END 4 */
 

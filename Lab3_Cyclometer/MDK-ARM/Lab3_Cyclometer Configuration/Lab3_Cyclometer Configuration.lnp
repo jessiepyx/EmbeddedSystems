@@ -11,6 +11,8 @@
 "lab3_cyclometer configuration\stm32f1xx_hal_rcc.o"
 "lab3_cyclometer configuration\stm32f1xx_hal_gpio.o"
 "lab3_cyclometer configuration\stm32f1xx_hal_uart.o"
+"lab3_cyclometer configuration\stm32f1xx_hal_tim_ex.o"
+"lab3_cyclometer configuration\stm32f1xx_hal_tim.o"
 "lab3_cyclometer configuration\stm32f1xx_hal_msp.o"
 "lab3_cyclometer configuration\stm32f1xx_it.o"
 "lab3_cyclometer configuration\main.o"
