@@ -34,7 +34,7 @@
 #include "stm32f1xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
+#define BUFFER_SIZE 10
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -42,8 +42,10 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-uint8_t RxBuffer[12];
-int RxCount = 0;
+__IO ITStatus UartReady = RESET;
+uint8_t aRxBuffer[BUFFER_SIZE];
+uint8_t aTxBuffer[BUFFER_SIZE];	
+uint16_t dSize = 10;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -53,15 +55,12 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-
+//void increase_ptr(uint8_t **ptr, uint8_t* base, int size);
+//int8_t gets_from_buffer(uint8_t *str, uint16_t upperBound);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-#ifdef __GNUC__
-	#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-	#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
+
 /* USER CODE END 0 */
 
 int main(void)
@@ -84,7 +83,7 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
-
+	HAL_UART_Receive_IT(&huart1, aRxBuffer, dSize);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -94,8 +93,15 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-	for (int i = 0; i < 12; i++)
-		printf("%c", RxBuffer[i]);
+		aTxBuffer[0] = aRxBuffer[0];
+		if (huart1.RxXferCount < dSize)
+		{
+			HAL_UART_Transmit(&huart1, &aTxBuffer[0], 1, 1000);
+			HAL_UART_Transmit(&huart1, aRxBuffer, (dSize - huart1.RxXferCount), 1000);
+			huart1.pRxBuffPtr -= (dSize - huart1.RxXferCount);
+			huart1.RxXferCount = dSize;
+		}
+		
   }
   /* USER CODE END 3 */
 
@@ -112,15 +118,17 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
 
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
@@ -133,7 +141,7 @@ void MX_USART1_UART_Init(void)
 {
 
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 9600;
+  huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -157,14 +165,12 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_Rx_CpltCallback(UART_HandleTypeDef *huart)
 {
-		RxBuffer[RxCount++] = *(huart->pRxBuffPtr);
-		HAL_UART_Receive_IT(huart, RxBuffer + RxCount, 1);
+	UartReady = SET;
 }
 
-PUTCHAR_PROTOTYPE
+void HAL_UART_Tx_CpltCallback(UART_HandleTypeDef *huart)
 {
-	HAL_UART_Transmit(&huart1, (uint8_t*)&ch, 1, 0xffff);
-	return ch;
+	UartReady = SET;
 }
 /* USER CODE END 4 */
 

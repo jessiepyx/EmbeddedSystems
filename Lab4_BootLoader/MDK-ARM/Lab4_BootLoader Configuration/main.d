@@ -22,4 +22,3 @@ lab4_bootloader configuration\main.o: ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f
 lab4_bootloader configuration\main.o: ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_flash_ex.h
 lab4_bootloader configuration\main.o: ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_pwr.h
 lab4_bootloader configuration\main.o: ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h
-lab4_bootloader configuration\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
