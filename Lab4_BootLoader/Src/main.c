@@ -34,7 +34,7 @@
 #include "stm32f1xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 100
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -44,7 +44,7 @@ UART_HandleTypeDef huart1;
 /* Private variables ---------------------------------------------------------*/
 __IO ITStatus UartReady = RESET;
 uint8_t aRxBuffer[BUFFER_SIZE];
-uint8_t aTxBuffer[BUFFER_SIZE];	
+uint8_t aTxBuffer[BUFFER_SIZE] = "hello bye";	
 uint16_t dSize = 10;
 /* USER CODE END PV */
 
@@ -83,7 +83,7 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
-	HAL_UART_Receive_IT(&huart1, aRxBuffer, dSize);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -93,15 +93,14 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		aTxBuffer[0] = aRxBuffer[0];
-		if (huart1.RxXferCount < dSize)
+		if (HAL_UART_Receive(&huart1, (uint8_t*)aRxBuffer, dSize, 3000) != HAL_OK)
 		{
-			HAL_UART_Transmit(&huart1, &aTxBuffer[0], 1, 1000);
-			HAL_UART_Transmit(&huart1, aRxBuffer, (dSize - huart1.RxXferCount), 1000);
-			huart1.pRxBuffPtr -= (dSize - huart1.RxXferCount);
-			huart1.RxXferCount = dSize;
+			HAL_UART_Transmit(&huart1, (uint8_t*)aTxBuffer, dSize, 0x1FFFFFF);
 		}
-		
+		else
+		{
+			HAL_UART_Transmit(&huart1, (uint8_t*)aRxBuffer, dSize, 0x1FFFFFF);
+		}
   }
   /* USER CODE END 3 */
 
@@ -148,7 +147,7 @@ void MX_USART1_UART_Init(void)
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  HAL_HalfDuplex_Init(&huart1);
+  HAL_UART_Init(&huart1);
 
 }
 
