@@ -44,8 +44,11 @@ UART_HandleTypeDef huart1;
 /* Private variables ---------------------------------------------------------*/
 __IO ITStatus UartReady = RESET;
 uint8_t aRxBuffer[BUFFER_SIZE];
-uint8_t aTxBuffer[BUFFER_SIZE] = "hello bye";	
+uint8_t aTxBuffer[BUFFER_SIZE] = "hello bye";
+uint8_t command[BUFFER_SIZE];
 uint16_t dSize = 10;
+uint16_t cmdSize = 0;
+uint8_t header[] = "Jessie's Boot Loader> ";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,7 +86,7 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
-
+	HAL_UART_Transmit(&huart1, header, 22, 0x1FFFFFF);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -93,13 +96,26 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		if (HAL_UART_Receive(&huart1, (uint8_t*)aRxBuffer, dSize, 3000) != HAL_OK)
+		if (HAL_UART_Receive(&huart1, (uint8_t*)aRxBuffer, 1, 0x1FFFFFF) != HAL_OK)
 		{
 			HAL_UART_Transmit(&huart1, (uint8_t*)aTxBuffer, dSize, 0x1FFFFFF);
 		}
 		else
 		{
-			HAL_UART_Transmit(&huart1, (uint8_t*)aRxBuffer, dSize, 0x1FFFFFF);
+			HAL_UART_Transmit(&huart1, (uint8_t*)aRxBuffer, 1, 0x1FFFFFF);
+			command[cmdSize++] = aRxBuffer[0];
+			if (aRxBuffer[0] == '\r')
+			{
+				char c = '\n';
+				command[cmdSize++] = c;
+				HAL_UART_Transmit(&huart1, (uint8_t*)&c, 1, 0x1FFFFFF);
+				
+				uint8_t warning[] = "I hear U, illegal command:\r\n";
+				HAL_UART_Transmit(&huart1, warning, 28, 0x1FFFFFF);
+				HAL_UART_Transmit(&huart1, (uint8_t*)command, cmdSize, 0x1FFFFFF);
+				cmdSize = 0;
+				HAL_UART_Transmit(&huart1, header, 22, 0x1FFFFFF);
+			}
 		}
   }
   /* USER CODE END 3 */
