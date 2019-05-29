@@ -42,13 +42,13 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-__IO ITStatus UartReady = RESET;
 uint8_t aRxBuffer[BUFFER_SIZE];
-uint8_t aTxBuffer[BUFFER_SIZE] = "hello bye";
 uint8_t command[BUFFER_SIZE];
 uint16_t dSize = 10;
 uint16_t cmdSize = 0;
 uint8_t header[] = "Jessie's Boot Loader> ";
+uint8_t timeout[] = "Time out\r\n";
+uint8_t warning[] = "Illegal command:\r\n";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -86,6 +86,7 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
+	// print header: boot loader>
 	HAL_UART_Transmit(&huart1, header, 22, 0x1FFFFFF);
   /* USER CODE END 2 */
 
@@ -96,24 +97,35 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+		// receive one char at a time
 		if (HAL_UART_Receive(&huart1, (uint8_t*)aRxBuffer, 1, 0x1FFFFFF) != HAL_OK)
 		{
-			HAL_UART_Transmit(&huart1, (uint8_t*)aTxBuffer, dSize, 0x1FFFFFF);
+			// receiving time out
+			HAL_UART_Transmit(&huart1, (uint8_t*)timeout, dSize, 0x1FFFFFF);
 		}
 		else
 		{
+			// print the received char
 			HAL_UART_Transmit(&huart1, (uint8_t*)aRxBuffer, 1, 0x1FFFFFF);
+			// save to command string
 			command[cmdSize++] = aRxBuffer[0];
+			
+			// end of a command
 			if (aRxBuffer[0] == '\r')
 			{
+				// new line
 				char c = '\n';
 				command[cmdSize++] = c;
 				HAL_UART_Transmit(&huart1, (uint8_t*)&c, 1, 0x1FFFFFF);
 				
-				uint8_t warning[] = "I hear U, illegal command:\r\n";
+				// print warning: illegal command
 				HAL_UART_Transmit(&huart1, warning, 28, 0x1FFFFFF);
 				HAL_UART_Transmit(&huart1, (uint8_t*)command, cmdSize, 0x1FFFFFF);
+				
+				// reset command buffer
 				cmdSize = 0;
+				
+				// print header: boot loader>
 				HAL_UART_Transmit(&huart1, header, 22, 0x1FFFFFF);
 			}
 		}
@@ -180,12 +192,10 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_Rx_CpltCallback(UART_HandleTypeDef *huart)
 {
-	UartReady = SET;
 }
 
 void HAL_UART_Tx_CpltCallback(UART_HandleTypeDef *huart)
 {
-	UartReady = SET;
 }
 /* USER CODE END 4 */
 
