@@ -101,7 +101,7 @@ int main(void)
 		if (HAL_UART_Receive(&huart1, (uint8_t*)aRxBuffer, 1, 0x1FFFFFF) != HAL_OK)
 		{
 			// receiving time out
-			HAL_UART_Transmit(&huart1, (uint8_t*)timeout, dSize, 0x1FFFFFF);
+			HAL_UART_Transmit(&huart1, (uint8_t*)timeout, 10, 0x1FFFFFF);
 		}
 		else
 		{
@@ -119,7 +119,7 @@ int main(void)
 				HAL_UART_Transmit(&huart1, (uint8_t*)&c, 1, 0x1FFFFFF);
 				
 				// print warning: illegal command
-				HAL_UART_Transmit(&huart1, warning, 28, 0x1FFFFFF);
+				HAL_UART_Transmit(&huart1, warning, 18, 0x1FFFFFF);
 				HAL_UART_Transmit(&huart1, (uint8_t*)command, cmdSize, 0x1FFFFFF);
 				
 				// reset command buffer
@@ -145,17 +145,15 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = 16;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI_DIV2;
-  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL16;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
 
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
 
@@ -168,7 +166,7 @@ void MX_USART1_UART_Init(void)
 {
 
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 9600;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
