@@ -242,7 +242,7 @@ int respond_command()
 	// peek addr
 	if (strcmp(op, "peek") == 0)
 	{
-		if (cnt > cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
+		if (cnt >= cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
 			return -1;
 		
 		cnt++;
@@ -278,7 +278,7 @@ int respond_command()
 	// poke addr data
 	else if (strcmp(op, "poke") == 0)
 	{
-		if (cnt > cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
+		if (cnt >= cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
 			return -1;
 		
 		cnt++;
@@ -293,9 +293,8 @@ int respond_command()
 		sscanf(command + cnt, "%x", &addr); // get addr
 		cnt += 10;
 		
-		if (cnt > cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
-								{HAL_UART_Transmit(&huart1, (uint8_t*)command + cnt, 1, 0x1FFFFFF);	
-		return -1;}
+		if (cnt >= cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
+			return -1;
 		
 		cnt++;
 				
