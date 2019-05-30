@@ -35,6 +35,10 @@
 
 /* USER CODE BEGIN Includes */
 #define BUFFER_SIZE 100
+#define MEM_SIZE 100
+
+#include "stdio.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -43,10 +47,13 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 uint8_t header[] = "Jessie's Boot Loader> ";
-uint8_t warning[] = "Illegal command:\r\n";
+uint8_t warning[] = "Illegal command or parameters.\r\n";
 uint8_t aRxBuffer[BUFFER_SIZE];
-uint8_t command[BUFFER_SIZE];
-uint16_t cmdSize = 0;
+uint16_t bufFront = 0;
+uint16_t bufRear = 0;
+char command[BUFFER_SIZE];
+int cmdSize = 0;
+unsigned int mem[MEM_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,7 +63,7 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-
+int respond_command(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -83,8 +90,12 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
+	char str[100];
+	int cnt = sprintf(str, "Memory starting at address 0x%p, total size: %d\r\n", mem, MEM_SIZE);
+	HAL_UART_Transmit(&huart1, (uint8_t*)str, cnt, 0x1FFFFFF);
+	
 	HAL_UART_Transmit(&huart1, header, sizeof(header)-1, 0x1FFFFFF);
-  HAL_UART_Receive_IT(&huart1, aRxBuffer, 1);
+  HAL_UART_Receive_IT(&huart1, aRxBuffer + bufRear, 1);
 	/* USER CODE END 2 */
 
   /* Infinite loop */
@@ -94,7 +105,36 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-
+		if (bufRear != bufFront)
+		{
+			char c = aRxBuffer[bufFront];
+			if (++bufFront == BUFFER_SIZE)
+			{
+				bufFront = 0;
+			}
+			
+			int ret;
+			switch (c)
+			{
+				case '\n':
+					ret = respond_command();
+					cmdSize = 0;
+					if (ret == -1)
+					{
+						HAL_UART_Transmit(&huart1, warning, sizeof(warning)-1, 0x1FFFFFF);
+					}
+					HAL_UART_Transmit(&huart1, header, sizeof(header)-1, 0x1FFFFFF);
+					break;
+				case '\b':
+					if (cmdSize > 0)
+					{
+						cmdSize--;
+					}
+					break;
+				default:
+					command[cmdSize++] = c;
+			}
+		}
   }
   /* USER CODE END 3 */
 
@@ -156,24 +196,137 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	HAL_UART_Transmit(huart, aRxBuffer, 1, 0x1FFFFFF);
-	command[cmdSize++] = aRxBuffer[0];
+	char c = aRxBuffer[bufRear];
+	HAL_UART_Transmit(huart, (uint8_t*)&c, 1, 0x1FFFFFF);
 	
-	if (aRxBuffer[0] == '\r')
+	if (++bufRear == BUFFER_SIZE)
 	{
-		char c = '\n';
-		command[cmdSize++] = c;
-		HAL_UART_Transmit(huart, (uint8_t*)&c, 1, 0x1FFFFFF);
-
-		HAL_UART_Transmit(huart, warning, sizeof(warning)-1, 0x1FFFFFF);
-		HAL_UART_Transmit(huart, command, cmdSize, 0x1FFFFFF);
-		
-		cmdSize = 0;
-		
-		HAL_UART_Transmit(huart, header, sizeof(header)-1, 0x1FFFFFF);
+		bufRear = 0;
 	}
 	
-	HAL_UART_Receive_IT(huart, aRxBuffer, 1);
+	if (c == '\r')
+	{
+		c = '\n';
+		aRxBuffer[bufRear] = c;
+		HAL_UART_Transmit(huart, (uint8_t*)&c, 1, 0x1FFFFFF);
+		
+		if (++bufRear == BUFFER_SIZE)
+		{
+			bufRear = 0;
+		}
+	}
+	
+	while (HAL_UART_Receive_IT(huart, aRxBuffer + bufRear, 1) != HAL_OK);
+}
+
+int respond_command()
+{
+	char op[5];
+	unsigned int addr;
+	unsigned int data;
+	int cnt = 0;
+	
+	// get rid of blanks in the front
+	while (cnt < cmdSize && (command[cnt] == ' ' || command[cnt] == '\t'))
+		cnt++;
+	
+	if (cmdSize - cnt < 4) // length of op
+		return -1;
+	
+	for (int i = 0; i < 4; i++)
+	{
+		op[i] = command[cnt++];
+	}
+	op[4] = '\0';
+		
+	// peek addr
+	if (strcmp(op, "peek") == 0)
+	{
+		if (cnt > cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
+			return -1;
+		
+		cnt++;
+				
+		// get rid of additional blanks
+		while (cnt < cmdSize && (command[cnt] == ' ' || command[cnt] == '\t'))
+			cnt++;
+				
+		if (cmdSize - cnt < 10) // length of addr
+			return -1;
+		
+		sscanf(command + cnt, "%x", &addr); // get addr
+		cnt += 10;
+					
+		// validate addr
+		if (addr < (unsigned int)mem || addr >= (unsigned int)(mem + MEM_SIZE))
+			return -1;
+		
+		// check if there's other char after addr					
+		while (cnt < cmdSize)
+		{
+			if (command[cnt] != ' ' && command[cnt] != '\t' && command[cnt] != '\r')
+				return -1;
+			cnt++;
+		}
+						
+		char str[100];
+		int cnt = sprintf(str, "%x\r\n", *(unsigned int*)addr);
+		HAL_UART_Transmit(&huart1, (uint8_t*)str, cnt, 0x1FFFFFF);
+		return 0;
+	}
+	
+	// poke addr data
+	else if (strcmp(op, "poke") == 0)
+	{
+		if (cnt > cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
+			return -1;
+		
+		cnt++;
+				
+		// get rid of additional blanks
+		while (cnt < cmdSize && (command[cnt] == ' ' || command[cnt] == '\t'))
+			cnt++;
+				
+		if (cmdSize - cnt < 10) // length of addr
+			return -1;
+		
+		sscanf(command + cnt, "%x", &addr); // get addr
+		cnt += 10;
+		
+		if (cnt > cmdSize || (command[cnt] != ' ' && command[cnt] != '\t')) // need at least one blank
+								{HAL_UART_Transmit(&huart1, (uint8_t*)command + cnt, 1, 0x1FFFFFF);	
+		return -1;}
+		
+		cnt++;
+				
+		// get rid of additional blanks
+		while (cnt < cmdSize && (command[cnt] == ' ' || command[cnt] == '\t'))
+			cnt++;
+				
+		if (cmdSize - cnt < 10) // length of data
+			return -1;
+		
+		sscanf(command + cnt, "%x", &data); // get data
+		cnt += 10;
+		
+		// validate addr
+		if (addr < (unsigned int)mem || addr >= (unsigned int)(mem + MEM_SIZE))
+			return -1;
+		
+		// check if there's other char after data					
+		while (cnt < cmdSize)
+		{
+			if (command[cnt] != ' ' && command[cnt] != '\t' && command[cnt] != '\r')
+				return -1;
+			
+			cnt++;
+		}
+		
+		*(unsigned int*)addr = data;
+		return 0;
+	}
+	
+	return -1;
 }
 /* USER CODE END 4 */
 
