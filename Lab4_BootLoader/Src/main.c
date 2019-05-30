@@ -42,13 +42,11 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+uint8_t header[] = "Jessie's Boot Loader> ";
+uint8_t warning[] = "Illegal command:\r\n";
 uint8_t aRxBuffer[BUFFER_SIZE];
 uint8_t command[BUFFER_SIZE];
-uint16_t dSize = 10;
 uint16_t cmdSize = 0;
-uint8_t header[] = "Jessie's Boot Loader> ";
-uint8_t timeout[] = "Time out\r\n";
-uint8_t warning[] = "Illegal command:\r\n";
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,8 +56,7 @@ static void MX_USART1_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-//void increase_ptr(uint8_t **ptr, uint8_t* base, int size);
-//int8_t gets_from_buffer(uint8_t *str, uint16_t upperBound);
+
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -86,9 +83,9 @@ int main(void)
   MX_USART1_UART_Init();
 
   /* USER CODE BEGIN 2 */
-	// print header: boot loader>
-	HAL_UART_Transmit(&huart1, header, 22, 0x1FFFFFF);
-  /* USER CODE END 2 */
+	HAL_UART_Transmit(&huart1, header, sizeof(header)-1, 0x1FFFFFF);
+  HAL_UART_Receive_IT(&huart1, aRxBuffer, 1);
+	/* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -97,38 +94,7 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		// receive one char at a time
-		if (HAL_UART_Receive(&huart1, (uint8_t*)aRxBuffer, 1, 0x1FFFFFF) != HAL_OK)
-		{
-			// receiving time out
-			HAL_UART_Transmit(&huart1, (uint8_t*)timeout, 10, 0x1FFFFFF);
-		}
-		else
-		{
-			// print the received char
-			HAL_UART_Transmit(&huart1, (uint8_t*)aRxBuffer, 1, 0x1FFFFFF);
-			// save to command string
-			command[cmdSize++] = aRxBuffer[0];
-			
-			// end of a command
-			if (aRxBuffer[0] == '\r')
-			{
-				// new line
-				char c = '\n';
-				command[cmdSize++] = c;
-				HAL_UART_Transmit(&huart1, (uint8_t*)&c, 1, 0x1FFFFFF);
-				
-				// print warning: illegal command
-				HAL_UART_Transmit(&huart1, warning, 18, 0x1FFFFFF);
-				HAL_UART_Transmit(&huart1, (uint8_t*)command, cmdSize, 0x1FFFFFF);
-				
-				// reset command buffer
-				cmdSize = 0;
-				
-				// print header: boot loader>
-				HAL_UART_Transmit(&huart1, header, 22, 0x1FFFFFF);
-			}
-		}
+
   }
   /* USER CODE END 3 */
 
@@ -148,10 +114,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   HAL_RCC_OscConfig(&RCC_OscInitStruct);
 
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK|RCC_CLOCKTYPE_PCLK1;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
   HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
 
@@ -188,12 +154,26 @@ void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_UART_Rx_CpltCallback(UART_HandleTypeDef *huart)
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-}
+	HAL_UART_Transmit(huart, aRxBuffer, 1, 0x1FFFFFF);
+	command[cmdSize++] = aRxBuffer[0];
+	
+	if (aRxBuffer[0] == '\r')
+	{
+		char c = '\n';
+		command[cmdSize++] = c;
+		HAL_UART_Transmit(huart, (uint8_t*)&c, 1, 0x1FFFFFF);
 
-void HAL_UART_Tx_CpltCallback(UART_HandleTypeDef *huart)
-{
+		HAL_UART_Transmit(huart, warning, sizeof(warning)-1, 0x1FFFFFF);
+		HAL_UART_Transmit(huart, command, cmdSize, 0x1FFFFFF);
+		
+		cmdSize = 0;
+		
+		HAL_UART_Transmit(huart, header, sizeof(header)-1, 0x1FFFFFF);
+	}
+	
+	HAL_UART_Receive_IT(huart, aRxBuffer, 1);
 }
 /* USER CODE END 4 */
 
