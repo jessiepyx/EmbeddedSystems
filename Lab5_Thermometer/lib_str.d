@@ -1,0 +1,11 @@
+.\lib_str.o: LIB\lib_str.c
+.\lib_str.o: .\LIB\lib_str.h
+.\lib_str.o: .\CPU\cpu.h
+.\lib_str.o: .\CPU\cpu_def.h
+.\lib_str.o: .\LIB\lib_def.h
+.\lib_str.o: .\APP\app_cfg.h
+.\lib_str.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\lib_str.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h
+.\lib_str.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\errno.h
+.\lib_str.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\limits.h
+.\lib_str.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
