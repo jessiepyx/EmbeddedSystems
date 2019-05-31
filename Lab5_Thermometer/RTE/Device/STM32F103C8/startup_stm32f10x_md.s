@@ -57,6 +57,7 @@ __heap_limit
                 EXPORT  __Vectors
                 EXPORT  __Vectors_End
                 EXPORT  __Vectors_Size
+				IMPORT	OS_CPU_PendSVHandler
 
 __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     Reset_Handler              ; Reset Handler
@@ -72,7 +73,7 @@ __Vectors       DCD     __initial_sp               ; Top of Stack
                 DCD     SVC_Handler                ; SVCall Handler
                 DCD     DebugMon_Handler           ; Debug Monitor Handler
                 DCD     0                          ; Reserved
-                DCD     PendSV_Handler             ; PendSV Handler
+                DCD     OS_CPU_PendSVHandler      ; PendSV Handler
                 DCD     SysTick_Handler            ; SysTick Handler
 
                 ; External Interrupts
