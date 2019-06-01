@@ -1,5 +1,7 @@
 #include <includes.h>
 
+/*** peripheral configurations & interrupt handlers ***/
+
 void SysTick_Handler(void)
 {
 	OS_CPU_SR cpu_sr;
@@ -32,10 +34,22 @@ void GPIO_Configuration(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 }
 
+/************ delay utilities **************/
+
 void Delay_ms(int times)
 {
 	OSTimeDly(OS_TICKS_PER_SEC/1000 * times);
 }
+
+void Delay_us(int times)
+{
+	unsigned int i;
+	for (i = 0; i < times; i++)
+	{
+	}
+}
+
+/************ led segments utilities **************/
 
 void digit_select(int index)
 {
@@ -96,7 +110,7 @@ void digit_show(int digit, int point)
 	GPIO_WriteBit(GPIOA, GPIO_Pin_7, v[7]);
 }
 
-void segments_TDM(int num)
+void segments_TDM_show(int num)
 {
 	int i;
 	static int index = -1;
@@ -111,31 +125,226 @@ void segments_TDM(int num)
 	digit_show(num % 10, 0);
 }
 
-int segments_val = 0;
+/************** DHT11 utilities **************/
 
-void task_inc(void* pdata)
+#define MAX_TICKS 100000
+
+#define DHT11_OK 0
+#define DHT11_NO_CONN 1
+#define DHT11_CS_ERROR 2
+
+#define DHT11_PORT GPIOB
+#define DHT11_PIN GPIO_Pin_0
+
+void ErrorState(int state)
 {
+	// infinite loop for suicide
 	while(1)
 	{
-		segments_val++;
-		Delay_ms(100);
+		segments_TDM_show(state);
+		Delay_us(4000);
 	}
 }
 
-void task_show(void* pdata)
+void DHT11_Set(int state)
 {
-	while(1)
+	if (state)
 	{
-		segments_TDM(segments_val);
+		GPIO_WriteBit(DHT11_PORT, DHT11_PIN, Bit_SET);
+	}
+	else
+	{
+		GPIO_WriteBit(DHT11_PORT, DHT11_PIN, Bit_SET);
+	}
+}
+
+void DHT11_Pin_OUT()
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	
+	GPIO_InitStructure.GPIO_Pin = DHT11_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	
+	GPIO_Init(DHT11_PORT, &GPIO_InitStructure);
+	
+	DHT11_Set(1);
+}
+
+void DHT11_Pin_IN()
+{
+	GPIO_InitTypeDef GPIO_InitStructure;
+	
+	GPIO_InitStructure.GPIO_Pin = DHT11_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	
+	GPIO_Init(DHT11_PORT, &GPIO_InitStructure);
+	
+	DHT11_Set(1);
+}
+
+uint8_t DHT11_Check()
+{
+	return GPIO_ReadInputDataBit(DHT11_PORT, DHT11_PIN);
+}
+
+void DHT11_Wait(int state, int place)
+{
+	int loopCnt = MAX_TICKS;
+	while (DHT11_Check() != state)
+	{
+		if (loopCnt-- == 0)
+		{
+			ErrorState(1000 + state * 1000 + place);
+		}
+	}
+}
+
+void DHT11_Rst()
+{
+	// handshake: send
+	DHT11_Pin_OUT();
+	DHT11_Set(0);
+	Delay_ms(25);
+	DHT11_Set(1);
+	Delay_us(40);
+	DHT11_Set(0);
+
+	// handshake: receive
+	DHT11_Pin_IN();
+}
+
+int val = 10;
+
+uint8_t DHT11_Read_Byte()
+{
+	int i, cnt;
+	uint8_t data = 0;
+	for (i = 0; i < 8; i++)
+	{
+		cnt = 0;
+		data <<= 1;
+		
+		// wait for high signal
+		DHT11_Wait(1, ++val);
+		
+		// compute high duration
+		while (DHT11_Check() > 0)
+		{
+			Delay_us(1);
+			cnt++;
+		}
+		
+		// if enough duration, set bit to 1
+		data |= cnt > 5;
+	}
+	return data;
+}
+
+uint8_t DHT11_Read_Data(uint8_t *buf)
+{
+	int i;
+	unsigned int cpu_sr;
+	
+	// enter critical section
+	OS_ENTER_CRITICAL();
+	
+	val = 10;
+	
+	// handshake
+	DHT11_Rst();
+	
+	// proceed response
+	if (DHT11_Check() == 0)
+	{
+		// low
+		DHT11_Wait(1, 2);
+		// high
+		DHT11_Wait(0, 3);
+		// read 40 bits
+		for (i = 0; i < 5; i++)
+		{
+			buf[i] = DHT11_Read_Byte();
+		}
+		
+		DHT11_Pin_OUT();
+		
+		// exit critical section
+		OS_EXIT_CRITICAL();
+		
+		// checksum
+		if (buf[0] + buf[1] + buf[2] + buf[3] == buf[4])
+		{
+			return DHT11_OK;
+		}
+		else
+		{
+			return DHT11_CS_ERROR;
+		}
+	}
+	else
+	{
+		// exit critical section
+		OS_EXIT_CRITICAL();
+		
+		return DHT11_NO_CONN;
+	}
+}
+
+uint8_t DHT11_Humidity(uint8_t *buf)
+{
+	return buf[0];
+}
+
+uint8_t DHT11_Temperature(uint8_t *buf)
+{
+	return buf[2];
+}
+
+/**************** uCOS tasks ****************/
+
+int segments_val = 0;
+
+void task_read_DHT11(void* pdata)
+{
+	uint8_t buf[5];
+	int state;
+	memset(buf, 0, sizeof(buf));
+	
+	while (1)
+	{
+		state = DHT11_Read_Data(buf);
+		switch (state)
+		{
+			case DHT11_CS_ERROR:
+				segments_val = 9002;
+				break;
+			case DHT11_NO_CONN:
+				segments_val = 9001;
+				break;
+			case DHT11_OK:
+				segments_val = DHT11_Temperature(buf);
+				break;
+		}
+		Delay_ms(1000);
+	}
+}
+
+void task_show_segments(void* pdata)
+{
+	while (1)
+	{
+		segments_TDM_show(segments_val);
 		Delay_ms(7);
 	}
 }
 
+/**************** main ******************/
+
 #define STK_Size 100
 int Task1_STK[STK_Size];
 int Task2_STK[STK_Size];
-int Task3_STK[STK_Size];
-
 
 int main()
 {
@@ -143,8 +352,8 @@ int main()
 	OSInit();
 	OS_CPU_SysTickInit();
 	
-	OSTaskCreate(task_inc, (void*)0, (OS_STK*)&Task1_STK[STK_Size-1], 1);
-	OSTaskCreate(task_show, (void*)0, (OS_STK*)&Task2_STK[STK_Size-1], 2);
+	OSTaskCreate(task_read_DHT11, (void*)0, (OS_STK*)&Task1_STK[STK_Size-1], 1);
+	OSTaskCreate(task_show_segments, (void*)0, (OS_STK*)&Task2_STK[STK_Size-1], 2);
 	
 	OSStart();
 	return 0;
