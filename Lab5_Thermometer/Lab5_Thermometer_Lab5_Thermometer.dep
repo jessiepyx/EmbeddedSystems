@@ -2,7 +2,7 @@ Dependencies for Project 'Lab5_Thermometer', Target 'Lab5_Thermometer': (DO NOT 
 F (.\APP\app_cfg.h)(0x5CF0A2AE)()
 F (.\APP\includes.h)(0x5CF0A34C)()
 F (.\APP\os_cfg.h)(0x5CF0A133)()
-F (.\app.c)(0x5CF2627A)(-c --cpu Cortex-M3 -D__EVAL -g -O0 --apcs=interwork --split_sections -I.\UCOS -I.\APP -I.\CPU -I.\LIB -I.\BSP -I.\RTE -I.\RTE\Device\STM32F103C8-I C:\Users\Jessie\SchoolWork\EmbeddedSystems\Lab5_Thermometer\RTE-I C:\Users\Jessie\SchoolWork\EmbeddedSystems\Lab5_Thermometer\RTE\Device\STM32F103C8-I C:\Keil_v5\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include-I C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.0.0-I C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.0.0\Device\Include-I C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.0.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\app.o --omf_browse .\app.crf --depend .\app.d)
+F (.\app.c)(0x5D0C37BF)(-c --cpu Cortex-M3 -D__EVAL -g -O0 --apcs=interwork --split_sections -I.\UCOS -I.\APP -I.\CPU -I.\LIB -I.\BSP -I.\RTE -I.\RTE\Device\STM32F103C8-I C:\Users\Jessie\SchoolWork\EmbeddedSystems\Lab5_Thermometer\RTE-I C:\Users\Jessie\SchoolWork\EmbeddedSystems\Lab5_Thermometer\RTE\Device\STM32F103C8-I C:\Keil_v5\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include-I C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.0.0-I C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.0.0\Device\Include-I C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.0.0\Device\StdPeriph_Driver\inc-D__UVISION_VERSION="513" -D_RTE_ -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\app.o --omf_browse .\app.crf --depend .\app.d)
 I (.\APP\includes.h)(0x5CF0A34C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5475F300)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5475F300)

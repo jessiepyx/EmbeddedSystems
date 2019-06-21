@@ -148,14 +148,14 @@ void ErrorState(int state)
 
 void DHT11_Set(int state)
 {
-	if (state)
-	{
-		GPIO_WriteBit(DHT11_PORT, DHT11_PIN, Bit_SET);
-	}
-	else
-	{
-		GPIO_WriteBit(DHT11_PORT, DHT11_PIN, Bit_SET);
-	}
+    if (state)
+		{
+        GPIO_WriteBit(DHT11_PORT, DHT11_PIN, Bit_SET);
+    }
+		else
+		{
+        GPIO_WriteBit(DHT11_PORT, DHT11_PIN, Bit_RESET);
+    }
 }
 
 void DHT11_Pin_OUT()
@@ -206,7 +206,7 @@ void DHT11_Rst()
 	// handshake: send
 	DHT11_Pin_OUT();
 	DHT11_Set(0);
-	Delay_ms(25);
+	Delay_us(25000);
 	DHT11_Set(1);
 	Delay_us(40);
 	DHT11_Set(0);
@@ -282,6 +282,7 @@ uint8_t DHT11_Read_Data(uint8_t *buf)
 		{
 			return DHT11_CS_ERROR;
 		}
+		return DHT11_OK;
 	}
 	else
 	{
@@ -340,6 +341,16 @@ void task_show_segments(void* pdata)
 	}
 }
 
+void task_test_delay(void* pdata)
+{
+	unsigned int j;
+	while (1)
+	{
+		Delay_us(1000000);
+		segments_val++;
+	}
+}
+
 /**************** main ******************/
 
 #define STK_Size 100
@@ -351,9 +362,11 @@ int main()
 	GPIO_Configuration();
 	OSInit();
 	OS_CPU_SysTickInit();
-	
-	OSTaskCreate(task_read_DHT11, (void*)0, (OS_STK*)&Task1_STK[STK_Size-1], 1);
-	OSTaskCreate(task_show_segments, (void*)0, (OS_STK*)&Task2_STK[STK_Size-1], 2);
+
+//		OSTaskCreate(task_test_delay, (void*)0, (OS_STK*)&Task2_STK[STK_Size-1], 1);
+
+	OSTaskCreate(task_read_DHT11, (void*)0, (OS_STK*)&Task2_STK[STK_Size-1], 1);
+	OSTaskCreate(task_show_segments, (void*)0, (OS_STK*)&Task1_STK[STK_Size-1], 2);
 	
 	OSStart();
 	return 0;

@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Lab5_Thermometer.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Lab5_Thermometer.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Sat Jun 01 19:33:45 2019
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5050106: Last Updated: Fri Jun 21 09:49:51 2019
 <BR><P>
 <H3>Maximum Stack Usage =        144 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -191,8 +191,8 @@ Global Symbols
 <P><STRONG><a name="[b3]"></a>__rt_lib_shutdown_user_alloc_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, libshutdown2.o(.ARM.Collect$$libshutdown$$0000000B))
 
 <P><STRONG><a name="[44]"></a>__rt_entry</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry.o(.ARM.Collect$$rtentry$$00000000))
-<BR><BR>[Called By]<UL><LI><a href="#[40]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__main
-<LI><a href="#[45]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload_rt2
+<BR><BR>[Called By]<UL><LI><a href="#[45]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__scatterload_rt2
+<LI><a href="#[40]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__main
 </UL>
 
 <P><STRONG><a name="[b4]"></a>__rt_entry_presh_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$00000002))
@@ -579,12 +579,10 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_read_DHT11
 </UL>
 
-<P><STRONG><a name="[61]"></a>DHT11_Rst</STRONG> (Thumb, 42 bytes, Stack size 8 bytes, app.o(i.DHT11_Rst))
-<BR><BR>[Stack]<UL><LI>Max Depth = 40 + Unknown Stack Size
-<LI>Call Chain = DHT11_Rst &rArr; Delay_ms &rArr; OSTimeDly &rArr; OS_Sched
+<P><STRONG><a name="[61]"></a>DHT11_Rst</STRONG> (Thumb, 44 bytes, Stack size 8 bytes, app.o(i.DHT11_Rst))
+<BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = DHT11_Rst &rArr; DHT11_Pin_OUT &rArr; GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[5e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delay_us
-<LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delay_ms
 <LI><a href="#[5a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Set
 <LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Pin_OUT
 <LI><a href="#[58]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Pin_IN
@@ -595,7 +593,7 @@ Global Symbols
 <P><STRONG><a name="[5a]"></a>DHT11_Set</STRONG> (Thumb, 30 bytes, Stack size 8 bytes, app.o(i.DHT11_Set))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = DHT11_Set
 </UL>
-<BR>[Calls]<UL><LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_WriteBit
+<BR>[Calls]<UL><LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_WriteBit
 </UL>
 <BR>[Called By]<UL><LI><a href="#[61]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Rst
 <LI><a href="#[5b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Pin_OUT
@@ -609,14 +607,14 @@ Global Symbols
 <P><STRONG><a name="[5d]"></a>DHT11_Wait</STRONG> (Thumb, 50 bytes, Stack size 16 bytes, app.o(i.DHT11_Wait))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = DHT11_Wait &rArr; ErrorState &rArr; segments_TDM_show &rArr; digit_show
 </UL>
-<BR>[Calls]<UL><LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ErrorState
+<BR>[Calls]<UL><LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ErrorState
 <LI><a href="#[56]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Check
 </UL>
 <BR>[Called By]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Read_Data
 <LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Read_Byte
 </UL>
 
-<P><STRONG><a name="[63]"></a>Delay_ms</STRONG> (Thumb, 12 bytes, Stack size 8 bytes, app.o(i.Delay_ms))
+<P><STRONG><a name="[65]"></a>Delay_ms</STRONG> (Thumb, 12 bytes, Stack size 8 bytes, app.o(i.Delay_ms))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32 + Unknown Stack Size
 <LI>Call Chain = Delay_ms &rArr; OSTimeDly &rArr; OS_Sched
 </UL>
@@ -624,16 +622,15 @@ Global Symbols
 </UL>
 <BR>[Called By]<UL><LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_show_segments
 <LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_read_DHT11
-<LI><a href="#[61]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Rst
 </UL>
 
 <P><STRONG><a name="[5e]"></a>Delay_us</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, app.o(i.Delay_us))
-<BR><BR>[Called By]<UL><LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ErrorState
+<BR><BR>[Called By]<UL><LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ErrorState
 <LI><a href="#[61]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Rst
 <LI><a href="#[5c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Read_Byte
 </UL>
 
-<P><STRONG><a name="[65]"></a>ErrorState</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, app.o(i.ErrorState))
+<P><STRONG><a name="[64]"></a>ErrorState</STRONG> (Thumb, 20 bytes, Stack size 0 bytes, app.o(i.ErrorState))
 <BR><BR>[Stack]<UL><LI>Max Depth = 48<LI>Call Chain = ErrorState &rArr; segments_TDM_show &rArr; digit_show
 </UL>
 <BR>[Calls]<UL><LI><a href="#[67]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;segments_TDM_show
@@ -664,7 +661,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[56]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Check
 </UL>
 
-<P><STRONG><a name="[64]"></a>GPIO_WriteBit</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, stm32f10x_gpio.o(i.GPIO_WriteBit))
+<P><STRONG><a name="[63]"></a>GPIO_WriteBit</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, stm32f10x_gpio.o(i.GPIO_WriteBit))
 <BR><BR>[Called By]<UL><LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;digit_show
 <LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;digit_select
 <LI><a href="#[5a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Set
@@ -819,7 +816,7 @@ Global Symbols
 <LI><a href="#[62]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OS_CPU_SR_Restore
 </UL>
 <BR>[Called By]<UL><LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;OS_TaskStat
-<LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delay_ms
+<LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delay_ms
 </UL>
 
 <P><STRONG><a name="[86]"></a>OSTimeTick</STRONG> (Thumb, 210 bytes, Stack size 16 bytes, os_core.o(i.OSTimeTick))
@@ -971,7 +968,7 @@ Global Symbols
 <P><STRONG><a name="[93]"></a>digit_select</STRONG> (Thumb, 86 bytes, Stack size 16 bytes, app.o(i.digit_select))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = digit_select
 </UL>
-<BR>[Calls]<UL><LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_WriteBit
+<BR>[Calls]<UL><LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_WriteBit
 </UL>
 <BR>[Called By]<UL><LI><a href="#[67]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;segments_TDM_show
 </UL>
@@ -979,7 +976,7 @@ Global Symbols
 <P><STRONG><a name="[94]"></a>digit_show</STRONG> (Thumb, 210 bytes, Stack size 32 bytes, app.o(i.digit_show))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = digit_show
 </UL>
-<BR>[Calls]<UL><LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_WriteBit
+<BR>[Calls]<UL><LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GPIO_WriteBit
 </UL>
 <BR>[Called By]<UL><LI><a href="#[67]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;segments_TDM_show
 </UL>
@@ -1004,14 +1001,14 @@ Global Symbols
 <LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;digit_select
 </UL>
 <BR>[Called By]<UL><LI><a href="#[3e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;task_show_segments
-<LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ErrorState
+<LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ErrorState
 </UL>
 
 <P><STRONG><a name="[3d]"></a>task_read_DHT11</STRONG> (Thumb, 72 bytes, Stack size 16 bytes, app.o(i.task_read_DHT11))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112 + Unknown Stack Size
 <LI>Call Chain = task_read_DHT11 &rArr; DHT11_Read_Data &rArr; DHT11_Read_Byte &rArr; DHT11_Wait &rArr; ErrorState &rArr; segments_TDM_show &rArr; digit_show
 </UL>
-<BR>[Calls]<UL><LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delay_ms
+<BR>[Calls]<UL><LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delay_ms
 <LI><a href="#[95]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Temperature
 <LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;DHT11_Read_Data
 </UL>
@@ -1022,7 +1019,7 @@ Global Symbols
 <LI>Call Chain = task_show_segments &rArr; segments_TDM_show &rArr; digit_show
 </UL>
 <BR>[Calls]<UL><LI><a href="#[67]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;segments_TDM_show
-<LI><a href="#[63]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delay_ms
+<LI><a href="#[65]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Delay_ms
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> app.o(i.main)
 </UL><P>
