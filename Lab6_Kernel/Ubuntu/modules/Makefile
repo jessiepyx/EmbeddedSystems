@@ -7,6 +7,7 @@ KERNEL_DIR := $(PWD)/../linux-4.9/
 all:
 	make $(ARGS) -C $(KERNEL_DIR) SUBDIRS=$(PWD) modules
 clean:
-	rm *.o *.ko *.mod.c
+	rm -f *.o* *.ko* *.mod.o* *.mod.c *.symvers .hello* *.order
+	rm -rf .tmp*
 
 .PHONY: clean
