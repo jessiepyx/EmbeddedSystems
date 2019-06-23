@@ -57,12 +57,12 @@ unsigned char digits[][8]={
     {0x1c, 0x22, 0x22, 0x22, 0x1e, 0x02, 0x22, 0x1c}, // 9
 };
 
-unsigned char LM[]={
-    0x80, 0x80, 0x80, 0x91, 0x9b, 0xf5, 0x11, 0x11
+unsigned char Pi[]={
+    0xf0, 0x90, 0x94, 0xf0, 0x84, 0x84, 0x84, 0x84
 };
 
 void Matrix_clear(void){
-    Matrix_render(LM);
+    Matrix_render(Pi);
 }
 
 void Matrix_init(void){
@@ -100,7 +100,7 @@ void disp_start(void){
 
 void Matrix_next_display(unsigned long data){
     if (head != tail){
-        unsigned char *ptr = LM;
+        unsigned char *ptr = Pi;
         unsigned char c = disp[head];
         if ('0' <= c && c <= '9'){
             ptr = digits[c - '0'];
