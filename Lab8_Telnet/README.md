@@ -4,6 +4,7 @@ Telnet server that displays client messages on LED matrix and writes logs to an 
 
 - Raspberry Pi 3B+
 - SQLite3
+- LED matrix and its wiring is the same as in [Lab7](https://github.com/jessiepyx/EmbeddedSystems/tree/master/Lab7_Matrix)
 
 ## Install matrix driver
 
