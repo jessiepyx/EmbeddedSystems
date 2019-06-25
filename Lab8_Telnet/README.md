@@ -46,7 +46,6 @@ $ ./server2 &
 Compile and run [*read_log.c*](https://github.com/jessiepyx/EmbeddedSystems/blob/master/Lab8_Telnet/read_log.c) to print the logs. Alternatively, run:
 
 ```
-$ sqlite3
-sqlite> ATTACH DATABASE 'test.db' as test;
+$ sqlite3 test.db
 sqlite> SELECT * FROM log;
 ```
