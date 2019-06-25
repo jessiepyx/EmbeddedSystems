@@ -36,7 +36,14 @@ $ telnel localhost 8080
 - Using SQLite C/C++ API
 - Server logs are stored in Tabel *Log* of *test.db*
 
-Compile and run [*read_log.c*] to print the logs. Alternatively, run:
+Compile and run the server:
+
+```
+$ gcc server2.c -o server2 -lsqlite3
+$ ./server2 &
+```
+
+Compile and run [*read_log.c*](https://github.com/jessiepyx/EmbeddedSystems/blob/master/Lab8_Telnet/read_log.c) to print the logs. Alternatively, run:
 
 ```
 $ sqlite3
