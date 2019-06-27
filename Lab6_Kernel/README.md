@@ -25,4 +25,5 @@ Cross-compilation:
 ## Kernel Module
 
 - [*hello.c*](https://github.com/jessiepyx/EmbeddedSystems/blob/master/Lab6_Kernel/Ubuntu/modules/hello.c) is cross-compiled on Ubuntu.
+- [*Makefile*](https://github.com/jessiepyx/EmbeddedSystems/blob/master/Lab6_Kernel/Ubuntu/modules/Makefile)
 
